@@ -1,0 +1,35 @@
+---
+- name: install utils03 vm
+  hosts: utils03
+  become: false
+  tasks:
+    - name: Install Docker Compose
+      apt:
+        name: docker-compose
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker
+        state: present
+
+    - name: Create directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - /root/semaphore
+
+    - name: Copy docker-compose files to the server
+      copy:
+        src: "files/{{ item }}.yml"
+        dest: "{{ item }}/docker-compose.yml"
+      loop:
+        - semaphore
+
+    - name: Start docker-compose
+      shell: "docker-compose up -d"
+      args:
+        chdir: "{{ item }}"
+      loop:
+        - /root/semaphore
